@@ -12,9 +12,16 @@ namespace Birthday.Model
         public int Id { get; set; }
         public string Name { get; set; }
         public DateTime DateOfBirth { get; set; }
+        public BirthdayEntry() { }
+        public BirthdayEntry(string name, DateTime dateOfBirth)
+        {
+            Name = name;
+            DateOfBirth = dateOfBirth;
+        }
+
         public override string ToString()
         {
-            return $"{Name} - {DateOfBirth.ToShortDateString()}";
+            return $"{Id}.{Name} - {DateOfBirth.ToString("dd/MM/yyyy")}";
         }
     }
 }

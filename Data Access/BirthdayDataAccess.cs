@@ -14,10 +14,39 @@ namespace Birthday.Data_Access
         {
             this.dbContext = dbContext;
         }
-
         public IEnumerable<BirthdayEntry> GetAllBirthdays()
         {
-            return null;
+            return dbContext.BirthdayEntries.ToList();
+        }
+/*        public IEnumerable<BirthdayEntry> GetUpcomingBirthdays(int countDays)
+        {
+            DateTime currentDate = DateTime.Today;
+            DateTime endDate = currentDate.AddDays(countDays);
+            return dbContext.BirthdayEntries.Where(x => x.DateOfBirth >= currentDate && x.DateOfBirth <= endDate).ToList();
+        }*/
+        public void AddEntry(BirthdayEntry entry)
+        {
+            dbContext.BirthdayEntries.Add(entry);
+            dbContext.SaveChanges();
+        }
+        public void RemoveEntry(int entryId) 
+        {
+            var entryToRemove = dbContext.BirthdayEntries.Find(entryId);
+            if (entryToRemove != null)
+            {
+                dbContext.BirthdayEntries.Remove(entryToRemove);
+                dbContext.SaveChanges();
+            }
+        }
+        public void UpdateEntry(BirthdayEntry updateEntry)
+        {
+            var entryToUpdate = dbContext.BirthdayEntries.Find(updateEntry.Id);
+            if (entryToUpdate != null)
+            {
+                entryToUpdate.Name = updateEntry.Name;
+                entryToUpdate.DateOfBirth = updateEntry.DateOfBirth;
+                dbContext.SaveChanges();
+            }
         }
     }
 }

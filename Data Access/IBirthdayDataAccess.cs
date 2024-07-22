@@ -10,7 +10,7 @@ namespace Birthday.Data_Access
     internal interface IBirthdayDataAccess
     {
         IEnumerable<BirthdayEntry> GetAllBirthdays();
-        IEnumerable<BirthdayEntry> GetUpcomingBirthdays();
+        //IEnumerable<BirthdayEntry> GetUpcomingBirthdays(int countDays);
         void AddEntry(BirthdayEntry entry);
         void RemoveEntry(int entryId);
         void UpdateEntry(BirthdayEntry updateEntry);

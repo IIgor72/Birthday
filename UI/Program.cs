@@ -3,38 +3,65 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Birthday.Business_Logic;
+using Birthday.Data_Access;
 using Birthday.Model;
 
 namespace Birthday.UI
 {
+    enum outputID { All, Upcoming }
     internal class Program
     {
         static void Main(string[] args)
-        {
-            Console.WriteLine("Hello, World!");
+        {   
+            BirthdayDbContext db = new BirthdayDbContext();
+            IBirthdayDataAccess birthdayDataAccess = new BirthdayDataAccess(db);
+            BirthdayManager birthdayManager = new BirthdayManager(birthdayDataAccess);
+            ConsoleUI ui = new ConsoleUI(birthdayManager);
 
-            using (BirthdayDbContext db = new BirthdayDbContext())
+            while (true)
             {
-                /*                // создаем два объекта User
-
-                                BirthdayEntry user1 = new BirthdayEntry { Name = "шопшп",  DateOfBirth = new DateTime(2020, 12, 12) };
-                                BirthdayEntry user2 = new BirthdayEntry { Name = "Alice", DateOfBirth = new DateTime(2020, 11, 06) };
-
-                                // добавляем их в бд
-                                db.BirthdayEntries.Add(user1);
-                                db.BirthdayEntries.Add(user2);
-                                db.SaveChanges();
-                                Console.WriteLine("Объекты успешно сохранены");*/
-
-                // получаем объекты из бд и выводим на консоль
-                var users = db.BirthdayEntries.ToList();
-                Console.WriteLine("Список объектов:");
-                foreach (BirthdayEntry t in users)
+                ui.ShowMenu();
+                switch(Convert.ToInt32(ui.GetUserInput("Выберите пункт меню")))
                 {
-                    Console.WriteLine($"{t.Id}.{t.Name} - {t.DateOfBirth.ToString("dd/MM/yyyy")}");
+                    case 1:
+                        ui.DisplayBirthdays(outputID.All);
+                        break;
+                
+                    case 2:
+                        ui.DisplayBirthdays(outputID.Upcoming);
+                        break;
+
+                    case 3:
+                        string nameEntryToAdd = ui.GetUserInput("Введите имя");
+                        DateTime dateOfBirthEntryToAdd = Convert.ToDateTime(ui.GetUserInput("Введите дату рождения (в формате 0000.00.00)"));
+                        BirthdayEntry entryToAdd = new BirthdayEntry(nameEntryToAdd, dateOfBirthEntryToAdd);
+                        birthdayManager.AddEntry(entryToAdd);
+                        break;
+
+                    case 4:
+                        int IdEntryToRemove = Convert.ToInt32(ui.GetUserInput("Введите Id записи для удаления"));
+                        birthdayManager.RemoveEntry(IdEntryToRemove);
+                        break;
+
+                    case 5:
+                        string nameEntryToUpdate = ui.GetUserInput("Введите новое имя");
+                        DateTime dateOfBirthEntryToUpdate = Convert.ToDateTime(ui.GetUserInput("Введите новую дату рождения (в формате 0000.00.00)"));
+                        BirthdayEntry entryToUpdate = new BirthdayEntry(nameEntryToUpdate, dateOfBirthEntryToUpdate);
+                        birthdayManager.AddEntry(entryToUpdate);
+                        break;
+
+                    case 6:
+                        break;
+
+                    case 7:
+                        break;
+
+                    case 0:
+                        Environment.Exit(0);
+                        break;
                 }
             }
-            Console.Read();
         }
     }
 }
