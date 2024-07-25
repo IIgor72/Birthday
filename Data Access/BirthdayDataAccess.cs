@@ -18,34 +18,73 @@ namespace Birthday.Data_Access
         {
             return dbContext.BirthdayEntries.ToList();
         }
-/*        public IEnumerable<BirthdayEntry> GetUpcomingBirthdays(int countDays)
-        {
-            DateTime currentDate = DateTime.Today;
-            DateTime endDate = currentDate.AddDays(countDays);
-            return dbContext.BirthdayEntries.Where(x => x.DateOfBirth >= currentDate && x.DateOfBirth <= endDate).ToList();
-        }*/
         public void AddEntry(BirthdayEntry entry)
         {
-            dbContext.BirthdayEntries.Add(entry);
-            dbContext.SaveChanges();
-        }
-        public void RemoveEntry(int entryId) 
-        {
-            var entryToRemove = dbContext.BirthdayEntries.Find(entryId);
-            if (entryToRemove != null)
+            try
             {
-                dbContext.BirthdayEntries.Remove(entryToRemove);
+                dbContext.BirthdayEntries.Add(entry);
                 dbContext.SaveChanges();
             }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при добавлении записи в базу данных: {ex.Message}");
+                throw;
+            }
         }
+        public void RemoveEntry(int entryId)
+        {
+            try
+            {
+                var entryToRemove = dbContext.BirthdayEntries.Where(x => x.EntryId == entryId).FirstOrDefault();
+                if (entryToRemove != null)
+                {
+                    dbContext.BirthdayEntries.Remove(entryToRemove);
+                    dbContext.SaveChanges();
+                }
+                else
+                {
+                    throw new Exception("Запись не найдена");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при удалении записи из базы данных: {ex.Message}");
+                throw;
+            }
+        }
+
         public void UpdateEntry(BirthdayEntry updateEntry)
         {
-            var entryToUpdate = dbContext.BirthdayEntries.Find(updateEntry.Id);
-            if (entryToUpdate != null)
+            try
             {
-                entryToUpdate.Name = updateEntry.Name;
-                entryToUpdate.DateOfBirth = updateEntry.DateOfBirth;
+                var entryToUpdate = dbContext.BirthdayEntries.Where(x => x.EntryId == updateEntry.EntryId).FirstOrDefault();
+                if (entryToUpdate != null)
+                {
+                    entryToUpdate.Name = updateEntry.Name;
+                    entryToUpdate.DateOfBirth = updateEntry.DateOfBirth;
+                    dbContext.SaveChanges();
+                }
+                else
+                {
+                    throw new Exception("Запись для обновления не найдена");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при обновлении записи в базе данных: {ex.Message}");
+            }
+        }
+
+        public void SaveChangesInDb()
+        {
+            try
+            {
                 dbContext.SaveChanges();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Ошибка при сохранении изменений в базу данных: {ex.Message}");
+                throw;
             }
         }
     }
