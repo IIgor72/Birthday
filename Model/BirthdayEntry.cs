@@ -20,6 +20,7 @@ namespace Birthday.Model
             Name = name;
             DateOfBirth = dateOfBirth;
         }
+
         public override string ToString()
         {
             return $"{EntryId}.{Name} - {DateOfBirth.ToString("dd/MM/yyyy")}";

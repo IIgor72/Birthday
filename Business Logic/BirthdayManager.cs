@@ -15,7 +15,7 @@ namespace Birthday.Business_Logic
 
         public BirthdayManager(IBirthdayDataAccess birthdayDataAccess)
         {
-           this.birthdayDataAccess = birthdayDataAccess;
+           this.birthdayDataAccess = birthdayDataAccess ?? throw new ArgumentNullException(nameof(birthdayDataAccess));
         }
 
         public IEnumerable<BirthdayEntry> GetAllBirthdays()
@@ -27,18 +27,20 @@ namespace Birthday.Business_Logic
         {
             DateTime currentDate = DateTime.Today;
             DateTime endDate = currentDate.AddDays(countDays);
-            return birthdayDataAccess.GetAllBirthdays().Where(x => IsDateInRange(x.DateOfBirth, currentDate, endDate)).ToList();
+            return birthdayDataAccess.GetAllBirthdays()
+                .Where(x => IsDateInRange(x.DateOfBirth, currentDate, endDate));
         }
 
         public IEnumerable<BirthdayEntry> GetPastBirthdays()
         {
             DateTime today = DateTime.Today;
             int currentMonth = today.Month;
-            int previousMonth = (currentMonth == 1) ? 12 : currentMonth - 1; // если январь, то ставим 12, иначе текущий - 1
+            int previousMonth = (currentMonth == 1) ? 12 : currentMonth - 1;    // если январь, то ставим 12, иначе текущий - 1
 
-            return birthdayDataAccess.GetAllBirthdays().Where(x =>
-                (x.DateOfBirth.Month == previousMonth && x.DateOfBirth.Day >= today.Day) || // Прошедшие дни текущего месяца
-                (x.DateOfBirth.Month == currentMonth && x.DateOfBirth.Day <= today.Day)).OrderBy(y => y.DateOfBirth); // Дни текущего месяца
+            return birthdayDataAccess.GetAllBirthdays()
+                .Where(x => (x.DateOfBirth.Month == previousMonth && x.DateOfBirth.Day >= today.Day) ||     // Прошедшие дни текущего месяца
+                            (x.DateOfBirth.Month == currentMonth && x.DateOfBirth.Day <= today.Day))        // Дни текущего месяца
+                .OrderBy(y => y.DateOfBirth);
         }
 
         private bool IsDateInRange(DateTime dateOfBirth, DateTime CurrentDate, DateTime endDate)
@@ -58,7 +60,7 @@ namespace Birthday.Business_Logic
             }
         }
 
-        public int GetCountEntries(IEnumerable<BirthdayEntry> birthdayEntries)
+        public int GetNumberOfEntries(IEnumerable<BirthdayEntry> birthdayEntries)
         {
             return birthdayEntries.Count();
         }
@@ -71,9 +73,7 @@ namespace Birthday.Business_Logic
             }
             catch (Exception ex)
             {
-
-                Console.WriteLine($"Ошибка в бизнес-логике при добавлении записи: {ex.Message}");
-                throw;
+                HandleBusinessError("Ошибка в бизнес-логике при добавлении записи", ex);
             }
         }
 
@@ -82,18 +82,21 @@ namespace Birthday.Business_Logic
             try
             {
                 birthdayDataAccess.RemoveEntry(entryId);
-
-                var allEntries = birthdayDataAccess.GetAllBirthdays().OrderBy(x => x.EntryId).ToList();
-                for (int i = 0; i < allEntries.Count; i++)
-                {
-                    allEntries[i].EntryId = i + 1;
-                }
+                UpdateEntryIds();
                 birthdayDataAccess.SaveChangesInDb();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка в бизнес-логике при удалении записи: {ex.Message}");
-                throw;
+                HandleBusinessError("Ошибка в бизнес-логике при удалении записи", ex);
+            }
+        }
+
+        private void UpdateEntryIds()
+        {
+            var allEntries = birthdayDataAccess.GetAllBirthdays().OrderBy(x => x.EntryId).ToList();
+            for (int i = 0; i < allEntries.Count; i++)
+            {
+                allEntries[i].EntryId = i + 1;
             }
         }
 
@@ -105,8 +108,7 @@ namespace Birthday.Business_Logic
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка в бизнес-логике при обновлении записи: {ex.Message}");
-                throw;
+                HandleBusinessError("Ошибка в бизнес-логике при обновлении записи", ex);
             }
         }
 
@@ -120,5 +122,10 @@ namespace Birthday.Business_Logic
             return birthdayDataAccess.GetAllBirthdays().OrderBy(x => x.DateOfBirth);
         }
 
+        private void HandleBusinessError(string errorMessage, Exception ex)
+        {
+            Console.WriteLine($"{errorMessage}: {ex.Message}");
+            throw ex;
+        }
     }
 }

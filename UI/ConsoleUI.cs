@@ -12,10 +12,12 @@ namespace Birthday.UI
     internal class ConsoleUI
     {
         private readonly BirthdayManager birthdayManager;
+
         public ConsoleUI(BirthdayManager birthdayManager)
         {
-            this.birthdayManager = birthdayManager;
+            this.birthdayManager = birthdayManager ?? throw new ArgumentNullException(nameof(birthdayManager));
         }
+
         public void ShowMenu()
         {
             Console.WriteLine("1. Показать список Дней Рождений");
@@ -29,84 +31,47 @@ namespace Birthday.UI
             Console.WriteLine();
         }
 
-        /*        public string GetUserInput(string promt)
-                {
-                    Console.Write($"{promt}: ");
-                    string userInput = Console.ReadLine();
-                    Console.WriteLine();
-                    return userInput;
-                }*/
         public string GetUserInput(string prompt)
         {
             while (true)
             {
-                try
-                {
-                    Console.Write($"{prompt}: ");
-                    string userInput = Console.ReadLine();
-                    Console.WriteLine();
+                Console.Write($"{prompt}: ");
+                string userInput = Console.ReadLine();
+                Console.WriteLine();
 
-                    if (userInput == null)
-                    {
-                        throw new InvalidOperationException("Ошибка: Ввод был прерван.");
-                    }
-                    else if (string.IsNullOrWhiteSpace(userInput))
-                    {
-                        throw new ArgumentException("Ошибка: Ввод не может быть пустым.");
-                    }
-                    else
-                    {
-                        return userInput;
-                    }
-                }
-                catch (IOException ex)
+                if (string.IsNullOrWhiteSpace(userInput))
                 {
-                    Console.WriteLine($"Произошла ошибка ввода-вывода: {ex.Message}. Попробуйте еще раз.");
+                    throw new ArgumentException("Ошибка: Ввод не может быть пустым.");
                 }
-                catch (ArgumentException ex)
+                else
                 {
-                    Console.WriteLine($"{ex.Message} Попробуйте еще раз.");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Произошла непредвиденная ошибка: {ex.Message}. Попробуйте еще раз.");
+                    return userInput;
                 }
             }
         }
 
         public void DisplayBirthdays(IEnumerable<BirthdayEntry> birthdays)
         {
-            try
+            if (birthdays == null || !birthdays.Any())
             {
-                if (birthdays == null || !birthdays.Any())
-                {
-                    throw new InvalidOperationException("Список пуст");
-                }
+                throw new InvalidOperationException("Список пуст");
+            }
 
-                int maxIdLength = birthdays.Max(entry => entry.EntryId.ToString().Length);
-                int maxNameLength = birthdays.Max(entry => entry.Name.Length);
-                int maxDateLength = birthdays.Max(entry => entry.DateOfBirth.ToString("dd/MM/yyyy").Length);
+            int maxIdLength = birthdays.Max(entry => entry.EntryId.ToString().Length);
+            int maxNameLength = birthdays.Max(entry => entry.Name.Length);
+            int maxDateLength = birthdays.Max(entry => entry.DateOfBirth.ToString("dd/MM/yyyy").Length);
 
-                string separator = new string('-', maxIdLength + maxNameLength + maxDateLength + 10);
-                /*число 10 для нормального вывода таблицы из-за разделителей между колонками*/
+            string separator = new string('-', maxIdLength + maxNameLength + maxDateLength + 10);
+            /*число 10 для нормального вывода таблицы из-за разделителей между колонками*/
 
-                foreach (var entry in birthdays)
-                {
-                    Console.WriteLine(separator);
-                    Console.WriteLine($"| {entry.EntryId.ToString().PadRight(maxIdLength)} |" +
-                        $" {entry.Name.PadRight(maxNameLength)} |" +
-                        $" {entry.DateOfBirth.ToString("dd/MM/yyyy").PadRight(maxDateLength)} |");
-                }
+            foreach (var entry in birthdays)
+            {
                 Console.WriteLine(separator);
+                Console.WriteLine($"| {entry.EntryId.ToString().PadRight(maxIdLength)} |" +
+                    $" {entry.Name.PadRight(maxNameLength)} |" +
+                    $" {entry.DateOfBirth.ToString("dd/MM/yyyy").PadRight(maxDateLength)} |");
             }
-            catch (InvalidOperationException ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Произошла ошибка: {ex.Message}");
-            }
+            Console.WriteLine(separator);
             Console.WriteLine();
         }
 
@@ -135,8 +100,7 @@ namespace Birthday.UI
                         break;
 
                     default:
-                        Console.WriteLine("Выбран неверный вариант");
-                        break;
+                        throw new ArgumentException("Ошибка: передан неверный вариант");
                 }
             }
             catch (FormatException ex)
@@ -155,9 +119,9 @@ namespace Birthday.UI
         {
             try
             {
-                int Id = birthdayManager.GetCountEntries(birthdayManager.GetAllBirthdays());
+                int Id = birthdayManager.GetNumberOfEntries(birthdayManager.GetAllBirthdays());
                 string nameToAdd = GetUserInput("Введите имя");
-                DateTime dateOfBirthToAdd = Convert.ToDateTime(GetUserInput("Введите дату рождения (в формате 00.00.0000)"));
+                DateTime dateOfBirthToAdd = Convert.ToDateTime(GetUserInput("Введите дату рождения (в формате дд.мм.гггг)"));
 
                 birthdayManager.AddEntry(new BirthdayEntry(Id + 1, nameToAdd, dateOfBirthToAdd));
                 Console.WriteLine("Запись добавлена");
@@ -198,7 +162,7 @@ namespace Birthday.UI
             {
                 int Id = Convert.ToInt32(GetUserInput("Введите Id записи для изменения"));
                 string updatedName = GetUserInput("Введите новое имя");
-                DateTime updatedDateOfBirth = Convert.ToDateTime(GetUserInput("Введите новую дату рождения (в формате гггг.мм.дд)"));
+                DateTime updatedDateOfBirth = Convert.ToDateTime(GetUserInput("Введите новую дату рождения (в формате дд.мм.гггг)"));
                 birthdayManager.UpdateEntry(new BirthdayEntry(Id, updatedName, updatedDateOfBirth));
                 Console.WriteLine("Запись обновлена");
             }

@@ -10,14 +10,17 @@ namespace Birthday.Data_Access
     internal class BirthdayDataAccess : IBirthdayDataAccess
     {
         private readonly BirthdayDbContext dbContext;
+
         public BirthdayDataAccess(BirthdayDbContext dbContext)
         {
-            this.dbContext = dbContext;
+            this.dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
         }
+
         public IEnumerable<BirthdayEntry> GetAllBirthdays()
         {
             return dbContext.BirthdayEntries.ToList();
         }
+
         public void AddEntry(BirthdayEntry entry)
         {
             try
@@ -27,10 +30,10 @@ namespace Birthday.Data_Access
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при добавлении записи в базу данных: {ex.Message}");
-                throw;
+                HandleDatabaseError("Ошибка при добавлении записи в базу данных", ex);
             }
         }
+
         public void RemoveEntry(int entryId)
         {
             try
@@ -48,8 +51,7 @@ namespace Birthday.Data_Access
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при удалении записи из базы данных: {ex.Message}");
-                throw;
+                HandleDatabaseError("Ошибка при удалении записи из базы данных", ex);
             }
         }
 
@@ -71,7 +73,7 @@ namespace Birthday.Data_Access
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при обновлении записи в базе данных: {ex.Message}");
+                HandleDatabaseError("Ошибка при обновлении записи в базе данных", ex);
             }
         }
 
@@ -83,9 +85,14 @@ namespace Birthday.Data_Access
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при сохранении изменений в базу данных: {ex.Message}");
-                throw;
+                HandleDatabaseError("Ошибка при сохранении изменений в базе данных", ex);
             }
+        }
+
+        private void HandleDatabaseError(string errorMessage, Exception ex)
+        {
+            Console.WriteLine($"{errorMessage}: {ex.Message}");
+            throw ex;
         }
     }
 }

@@ -15,70 +15,72 @@ namespace Birthday.UI
     {
         static void Main(string[] args)
         {
-            BirthdayDbContext db = new BirthdayDbContext();
-            IBirthdayDataAccess birthdayDataAccess = new BirthdayDataAccess(db);
-            BirthdayManager birthdayManager = new BirthdayManager(birthdayDataAccess);
-            ConsoleUI ui = new ConsoleUI(birthdayManager);
-
-            while (true)
+            using (BirthdayDbContext db = new BirthdayDbContext())
             {
-                try
+                IBirthdayDataAccess birthdayDataAccess = new BirthdayDataAccess(db);
+                BirthdayManager birthdayManager = new BirthdayManager(birthdayDataAccess);
+                ConsoleUI consoleUI = new ConsoleUI(birthdayManager);
+
+                while (true)
                 {
-                    ui.ShowMenu();
-                    switch (Convert.ToInt32(ui.GetUserInput("Выберите пункт меню")))
+                    try
                     {
-                        case 1:
-                            ui.DisplayBirthdays(ui.ChoosingTheOutputMethod(outputID.All));
-                            break;
+                        consoleUI.ShowMenu();
+                        switch (Convert.ToInt32(consoleUI.GetUserInput("Выберите пункт меню")))
+                        {
+                            case 1:
+                                consoleUI.DisplayBirthdays(consoleUI.ChoosingTheOutputMethod(outputID.All));
+                                break;
 
-                        case 2:
-                            ui.DisplayBirthdays(ui.ChoosingTheOutputMethod(outputID.Upcoming));
-                            break;
+                            case 2:
+                                consoleUI.DisplayBirthdays(consoleUI.ChoosingTheOutputMethod(outputID.Upcoming));
+                                break;
 
-                        case 3:
-                            ui.DisplayBirthdays(ui.ChoosingTheOutputMethod(outputID.Past));
-                            break;
+                            case 3:
+                                consoleUI.DisplayBirthdays(consoleUI.ChoosingTheOutputMethod(outputID.Past));
+                                break;
 
-                        case 4:
-                            ui.AddBirthdayEntry();
-                            break;
+                            case 4:
+                                consoleUI.AddBirthdayEntry();
+                                break;
 
-                        case 5:
-                            ui.RemoveBirthdayEntry();
-                            break;
+                            case 5:
+                                consoleUI.RemoveBirthdayEntry();
+                                break;
 
-                        case 6:
-                            ui.UpdateBirthdayEntry();
-                            break;
+                            case 6:
+                                consoleUI.UpdateBirthdayEntry();
+                                break;
 
-                        case 7:
-                            ui.SortBirthdayList();
-                            break;
+                            case 7:
+                                consoleUI.SortBirthdayList();
+                                break;
 
-                        case 0:
-                            Environment.Exit(0);
-                            break;
+                            case 0:
+                                Environment.Exit(0);
+                                break;
 
-                        default:
-                            Console.WriteLine("Выбран не существующий пункт. Попробуйте еще раз.");
-                            break;
+                            default:
+                                Console.WriteLine("Выбран не существующий пункт. Попробуйте еще раз.");
+                                break;
+                        }
                     }
-                }
-                catch (FormatException)
-                {
-                    Console.WriteLine("Ошибка: Введено некорректное значение. Пожалуйста, введите число.");
-                }
-                catch (IOException ex)
-                {
-                    Console.WriteLine($"Произошла ошибка ввода-вывода: {ex.Message}. Попробуйте еще раз.");
-                }
-                catch (ArgumentException ex)
-                {
-                    Console.WriteLine($"{ex.Message} Попробуйте еще раз.");
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Произошла непредвиденная ошибка: {ex.Message}. Попробуйте еще раз.");
+                    catch (FormatException)
+                    {
+                        Console.WriteLine("Ошибка: Введено некорректное значение. Пожалуйста, введите число.");
+                    }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine($"Произошла ошибка ввода-вывода: {ex.Message}. Попробуйте еще раз.");
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        Console.WriteLine($"{ex.Message} Попробуйте еще раз.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Произошла непредвиденная ошибка: {ex.Message}. Попробуйте еще раз.");
+                    }
                 }
             }
         }
